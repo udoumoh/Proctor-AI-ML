@@ -1,54 +1,42 @@
-import os
-import sys
 import cv2
 import os
-import sys
-import numpy as np
-import argparse
 
-dir_path = 'C:/Users/JOHN/Documents/openpose/build'
-sys.path.append(dir_path + '/python/openpose/Release')
-os.environ['PATH']  = os.environ['PATH'] + ';' + dir_path + '/x64/Release;' +  dir_path + '/bin;'
+# Open the video file
+video_path = 'cheating2.mpeg'
+video = cv2.VideoCapture(video_path)
 
-import pyopenpose as op
+# Check if video file opened successfully
+if not video.isOpened():
+    print("Error opening video file")
 
-# Set OpenPose parameters
-params = dict()
-params["model_folder"] = "C:/Users/JOHN/Documents/openpose/models"
-params["net_resolution"] = "-1x368"
-params["model_pose"] = "BODY_25"
-# params["tracking"] = 5
-params["number_people_max"] = 3
+# Initialize variables
+frame_count = 0
+frame_rate = 1  # Extract a frame after every 6 frames (adjust as needed)
 
-# Create OpenPose instance
-opWrapper = op.WrapperPython()
-opWrapper.configure(params)
-opWrapper.start()
-
-# Create video capture object
-cap = cv2.VideoCapture('C:/Users/JOHN/Videos/project/test.MOV')
-
-# Process each frame of the video
+# Loop through the video frames
 while True:
-    # Read a frame
-    ret, image = cap.read()
+    # Read the next frame from the video
+    ret, frame = video.read()
+
+    # Check if frame was successfully read
     if not ret:
         break
-    
-    # Process the frame with OpenPose
-    datum = op.Datum()
-    datum.cvInputData = image
-    opWrapper.emplaceAndPop(op.VectorDatum([datum]))
-    
-    # Get pose keypoints and output image
-    keypoints = datum.poseKeypoints
-    output_image = datum.cvOutputData
-    
-    # Display the output image
-    cv2.imshow('OpenPose Output', output_image)
-    if cv2.waitKey(1) == ord('q'):
+
+    # Process the frame (e.g., save, display, etc.)
+    frame_count += 1
+
+    # Extract frames based on the frame rate
+    if frame_count % frame_rate == 0:
+        frame_filename = os.path.join('TD2/cheating', f"frame_{frame_count}.jpg")
+        cv2.imwrite(frame_filename, frame)
+
+        # Display the frame (optional)
+        cv2.imshow('Frame', frame)
+
+    # Break the loop if 'q' key is pressed
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Release resources
-cap.release()
+# Release the video capture object and close any open windows
+video.release()
 cv2.destroyAllWindows()
